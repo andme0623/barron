@@ -1,0 +1,44 @@
+//@version=5
+strategy("布林带和Stoch RSI 策略", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=10)
+
+// 输入参数
+length = input(14, "Stoch RSI 长度")
+rsiLength = input(14, "RSI 长度")
+kSmooth = input(3, "K 平滑")
+dSmooth = input(3, "D 平滑")
+overbought = input(80, "超买阈值")
+oversold = input(20, "超卖阈值")
+bbLength = input(20, "布林带长度")
+stdDev = input(2, "标准差倍数")
+
+// 布林带计算
+bbLower = ta.sma(close, bbLength) - stdDev * ta.stdev(close, bbLength)
+bbUpper = ta.sma(close, bbLength) + stdDev * ta.stdev(close, bbLength)
+
+// Stochastic RSI 计算
+rsi = ta.rsi(close, rsiLength)
+k = ta.sma(ta.stoch(rsi, rsi, rsi, length), kSmooth)
+d = ta.sma(k, dSmooth)
+
+// 买卖条件
+longCondition = close < bbLower and k < oversold
+shortCondition = close > bbUpper and k > overbought
+
+// 止盈止损比例
+takeProfitPct = 2.0 / 100
+stopLossPct = 4.0 / 100
+
+// 执行策略
+// 做多
+if (longCondition)
+    strategy.entry("做多", strategy.long)
+    strategy.exit("止盈", "做多", limit=strategy.position_avg_price * (1 + takeProfitPct), stop=strategy.position_avg_price * (1 - stopLossPct))
+
+// 做空
+if (shortCondition)
+    strategy.entry("做空", strategy.short)
+    strategy.exit("止盈", "做空", limit=strategy.position_avg_price * (1 - takeProfitPct), stop=strategy.position_avg_price * (1 + stopLossPct))
+
+// 绘制指标
+plot(bbLower, color=color.red)
+plot(bbUpper, color=color.green)
