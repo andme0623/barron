@@ -1,0 +1,30 @@
+//@version=5
+strategy("布林带和Stoch RSI 策略", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=10)
+// 输入参数
+length = input(14, "Stoch RSI 长度")
+rsiLength = input(14, "RSI 长度")
+kSmooth = input(3, "K 平滑")
+dSmooth = input(3, "D 平滑")
+overbought = input(80, "超买阈值")
+oversold = input(20, "超卖阈值")
+bbLength = input(20, "布林带长度")
+stdDev = input(2, "标准差倍数")
+// 布林带计算
+bbLower = ta.sma(close, bbLength) - stdDev * ta.stdev(close, bbLength)
+bbUpper = ta.sma(close, bbLength) + stdDev * ta.stdev(close, bbLength)
+// Stochastic RSI 计算
+rsi = ta.rsi(close, rsiLength)
+k = ta.sma(ta.stoch(rsi, rsi, rsi, length), kSmooth)
+d = ta.sma(k, dSmooth)
+// 买卖条件
+longCondition = close < bbLower and k < oversold
+// 执行策略
+if (longCondition)
+    strategy.entry("做多", strategy.long)
+    strategy.exit("止盈", "做多", profit = 1500)
+    strategy.exit("止损", "做多", loss = 1000)
+// 绘制指标
+plot(bbLower, color=color.red)
+plot(bbUpper, color=color.green)
+//hline(overbought, "超买线", color=color.red)
+//hline(oversold, "超卖线", color=color.green)
