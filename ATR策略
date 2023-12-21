@@ -1,0 +1,30 @@
+//@version=5
+strategy("Stochastic Oscillator Strategy", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=10)
+
+// Stochastic Oscillator 参数
+kPeriod = input.int(14, "K Period")
+dPeriod = input.int(3, "D Period")
+slowing = input.int(3, "Slowing")
+upperBound = input.int(80, "Upper Bound")
+lowerBound = input.int(20, "Lower Bound")
+
+// 计算 Stochastic Oscillator
+k = ta.sma(ta.stoch(close, high, low, kPeriod), slowing)
+d = ta.sma(k, dPeriod)
+
+// 买入卖出条件
+longCondition = ta.crossover(k, d) and k < lowerBound
+shortCondition = ta.crossunder(k, d) and k > upperBound
+
+// 执行策略
+if (longCondition)
+    strategy.entry("Long", strategy.long)
+
+if (shortCondition)
+    strategy.close("Long")
+
+// 绘制 Stochastic Oscillator 和信号线
+plot(k, title="Stochastic K", color=color.blue)
+plot(d, title="Stochastic D", color=color.orange)
+hline(upperBound, "Upper Bound", color=color.red)
+hline(lowerBound, "Lower Bound", color=color.green)
