@@ -1,0 +1,32 @@
+//@version=5
+strategy("Keltner Channel Strategy", overlay=true)
+
+// 肯特纳通道参数
+length = input.int(20, title="Length", minval=1)
+multiplier = input.float(1.5, title="Multiplier")
+
+// 计算中间线（20周期EMA）
+middleLine = ta.ema(close, length)
+
+// 计算ATR
+atr = ta.atr(length)
+
+// 计算上轨和下轨
+upperBand = middleLine + multiplier * atr
+lowerBand = middleLine - multiplier * atr
+
+// 定义买入和卖出条件
+longCondition = close > upperBand
+shortCondition = close < lowerBand
+
+// 执行策略
+if (longCondition)
+    strategy.entry("Long", strategy.long)
+
+if (shortCondition)
+    strategy.close("Long")
+
+// 绘制肯特纳通道
+plot(upperBand, title="Upper Band", color=color.green)
+plot(lowerBand, title="Lower Band", color=color.red)
+plot(middleLine, title="Middle Line", color=color.blue)
