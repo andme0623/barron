@@ -1,0 +1,31 @@
+//@version=5
+strategy("MACD and KDJ Cross Strategy", overlay=true)
+
+// MACD参数
+macdFastLength = 12
+macdSlowLength = 26
+macdSignalSmoothing = 9
+[macdLine, signalLine, _] = ta.macd(close, macdFastLength, macdSlowLength, macdSignalSmoothing)
+
+// KDJ参数
+kLength = 14
+dLength = 3
+k = ta.sma(ta.stoch(close, high, low, kLength), dLength)
+d = ta.sma(k, dLength)
+j = 3 * k - 2 * d
+
+// 买入卖出条件
+buyCondition = ta.crossover(macdLine, signalLine) and ta.crossover(k, d)
+sellCondition = ta.crossunder(macdLine, signalLine) and ta.crossunder(k, d)
+
+// 执行策略
+if (buyCondition)
+    strategy.entry("Buy", strategy.long)
+
+if (sellCondition)
+    strategy.close("Buy")
+
+// 绘制指标
+plot(macdLine - signalLine, color=color.blue, title="MACD Histogram")
+plot(k, color=color.green, title="K Line")
+plot(d, color=color.red, title="D Line")
