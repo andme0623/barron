@@ -1,0 +1,32 @@
+//@version=5
+strategy("EMA and MACD Strategy", overlay=true)
+
+// EMA 参数
+shortEmaLength = 30
+longEmaLength = 120
+
+// 计算 EMA
+shortEma = ta.ema(close, shortEmaLength)
+longEma = ta.ema(close, longEmaLength)
+
+// MACD 参数
+macdFastLength = 12
+macdSlowLength = 26
+macdSignalSmoothing = 9
+[macdLine, signalLine, _] = ta.macd(close, macdFastLength, macdSlowLength, macdSignalSmoothing)
+
+// 定义买入和卖出条件
+longCondition = ta.crossover(shortEma, longEma) and macdLine > 0
+shortCondition = ta.crossunder(shortEma, longEma) and macdLine < 0
+
+// 执行策略
+if (longCondition)
+    strategy.entry("Long", strategy.long)
+
+if (shortCondition)
+    strategy.close("Long")
+
+// 绘制 EMA 和 MACD
+plot(shortEma, title="EMA30", color=color.blue)
+plot(longEma, title="EMA120", color=color.red)
+hline(0, title="Zero Line", color=color.gray)
